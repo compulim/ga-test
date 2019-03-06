@@ -2,6 +2,42 @@
 <html lang="en-US">
   <head>
     <title>Test Google Analytics</title>
+    <script>
+      // Adopted from https://github.com/michaelrhodes/math-random
+      // MIT License - Copyright 2019 Michael Rhodes
+      window.random = (function (global) {
+        const uint32 = 'Uint32Array' in global;
+        const crypto = global.crypto || global.msCrypto;
+        const rando = crypto && typeof crypto.getRandomValues === 'function';
+        const good = uint32 && rando;
+
+        if (!good) { return Math.random; }
+
+        const arr = new Uint32Array(1);
+        const max = Math.pow(2, 32);
+
+        function random() {
+          crypto.getRandomValues(arr);
+
+          return arr[0] / max;
+        }
+
+        random.cryptographic = true;
+
+        return random;
+      })(window);
+
+      // Adopted from http://slavik.meltser.info/the-efficient-way-to-create-guid-uuid-in-javascript-with-explanation/
+      window.uuid = (function () {
+        const part8 = short => {
+          const part = (window.random().toString(16) + '00000000').substr(2, 8);
+
+          return short ? '-' + part.substr(0, 4) + '-' + part.substr(4, 4) : part;
+        };
+
+        return () => part8() + part8(true) + part8(true) + part8();
+      })();
+    </script>
     <!-- Google Analytics -->
     <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -10,6 +46,7 @@
       })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
       ga('create', 'UA-119462943-4', {
+        clientId: window.uuid(),
         storage: 'none',
         storeGac: false
       });
